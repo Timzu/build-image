@@ -1,18 +1,41 @@
 # Dockerfile
 
-FROM docker
+FROM alpine
 
-RUN apk add -v --update bash curl python3 py-pip jq git file tar && \
-    apk add --no-cache -X http://dl-cdn.alpinelinux.org/alpine/edge/testing hub
+ENV GLIBC_VER=2.31-r0
 
-# awscli
-ENV awscli 1.27.94
-RUN pip install --upgrade awscli==${awscli} && \
-    apk del -v --purge py-pip && \
-    rm /var/cache/apk/*
+RUN apk --no-cache update && \
+  apk add --no-cache bash curl python3 py3-pip jq git file tar && \
+  apk add --no-cache -X http://dl-cdn.alpinelinux.org/alpine/edge/testing hub
 
-COPY .m2/ /root/.m2/
+RUN apk --no-cache add \
+  binutils \
+  && curl -sL https://alpine-pkgs.sgerrand.com/sgerrand.rsa.pub -o /etc/apk/keys/sgerrand.rsa.pub \
+  && curl -sLO https://github.com/sgerrand/alpine-pkg-glibc/releases/download/${GLIBC_VER}/glibc-${GLIBC_VER}.apk \
+  && curl -sLO https://github.com/sgerrand/alpine-pkg-glibc/releases/download/${GLIBC_VER}/glibc-bin-${GLIBC_VER}.apk \
+  && apk add --no-cache \
+  glibc-${GLIBC_VER}.apk \
+  glibc-bin-${GLIBC_VER}.apk \
+  && curl -sL https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip -o awscliv2.zip \
+  && unzip awscliv2.zip \
+  && aws/install \
+  && rm -rf \
+  awscliv2.zip \
+  aws \
+  /usr/local/aws-cli/v2/*/dist/aws_completer \
+  /usr/local/aws-cli/v2/*/dist/awscli/data/ac.index \
+  /usr/local/aws-cli/v2/*/dist/awscli/examples \
+  && apk --no-cache del \
+  binutils \
+  && rm glibc-${GLIBC_VER}.apk \
+  && rm glibc-bin-${GLIBC_VER}.apk \
+  && rm -rf /var/cache/apk/*
+
+RUN apk add docker
+
+# buildx
+COPY --from=docker/buildx-bin /buildx /usr/libexec/docker/cli-plugins/docker-buildx
 
 VOLUME /root/.aws
 
-ENTRYPOINT ["bash"]
+ENTRYPOINT ["aws"]
