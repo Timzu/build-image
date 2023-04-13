@@ -7,7 +7,7 @@ docker pull timzu/build-image
 ## versions
 
 ```
-ENV awscli 1.27.111
+ENV awscli 1.27.112
 ENV kubectl v1.27.0
-ENV helm v3.11.2
+ENV helm v3.11.3
 ```
