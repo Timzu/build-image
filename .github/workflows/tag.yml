@@ -19,7 +19,7 @@ jobs:
           fetch-depth: 1
 
       - name: Docker Push
-        uses: timzu/act-build@master
+        uses: timzu/act-build@v0.3.24
         with:
           args: --docker
         env:
@@ -28,25 +28,3 @@ jobs:
           DOCKERFILE: "Dockerfile"
           TAG_NAME: ${{ github.ref }}
           LATEST: "true"
-
-      - name: Docker Push - alpine
-        uses: timzu/act-build@master
-        with:
-          args: --docker
-        env:
-          USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-          DOCKERFILE: "alpine/Dockerfile"
-          TAG_NAME: ${{ github.ref }}
-          TAG_POST: "-alpine"
-
-      - name: Docker Push - kube
-        uses: timzu/act-build@master
-        with:
-          args: --docker
-        env:
-          USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-          DOCKERFILE: "kube/Dockerfile"
-          TAG_NAME: ${{ github.ref }}
-          TAG_POST: "-kube"
