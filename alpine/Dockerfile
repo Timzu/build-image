@@ -2,7 +2,7 @@
 
 FROM alpine
 
-ENV GLIBC_VER=2.31-r0
+ENV GLIBC_VER=2.35-r1
 
 RUN apk --no-cache update && \
   apk add --no-cache bash curl python3 py3-pip jq git file tar && \
