@@ -1,41 +1,25 @@
-# Dockerfile
+ARG ALPINE_VERSION=3.17
+FROM python:3.10-alpine${ALPINE_VERSION} as builder
 
-FROM alpine
+ARG AWS_CLI_VERSION=2.11.11
+RUN apk add --no-cache git unzip groff build-base libffi-dev cmake
+RUN git clone --single-branch --depth 1 -b ${AWS_CLI_VERSION} https://github.com/aws/aws-cli.git
 
-ENV GLIBC_VER=2.35-r1
+WORKDIR aws-cli
+RUN ./configure --with-install-type=portable-exe --with-download-deps
+RUN make
+RUN make install
 
-RUN apk --no-cache update && \
-  apk add --no-cache bash curl python3 py3-pip jq git file tar && \
-  apk add --no-cache -X http://dl-cdn.alpinelinux.org/alpine/edge/testing hub
+# reduce image size: remove autocomplete and examples
+RUN rm -rf \
+  /usr/local/lib/aws-cli/aws_completer \
+  /usr/local/lib/aws-cli/awscli/data/ac.index \
+  /usr/local/lib/aws-cli/awscli/examples
+RUN find /usr/local/lib/aws-cli/awscli/data -name completions-1*.json -delete
+RUN find /usr/local/lib/aws-cli/awscli/botocore/data -name examples-1.json -delete
+RUN (cd /usr/local/lib/aws-cli; for a in *.so*; do test -f /lib/$a && rm $a; done)
 
-RUN apk --no-cache add \
-  binutils \
-  && curl -sL https://alpine-pkgs.sgerrand.com/sgerrand.rsa.pub -o /etc/apk/keys/sgerrand.rsa.pub \
-  && curl -sLO https://github.com/sgerrand/alpine-pkg-glibc/releases/download/${GLIBC_VER}/glibc-${GLIBC_VER}.apk \
-  && curl -sLO https://github.com/sgerrand/alpine-pkg-glibc/releases/download/${GLIBC_VER}/glibc-bin-${GLIBC_VER}.apk \
-  && apk add --no-cache \
-  glibc-${GLIBC_VER}.apk \
-  glibc-bin-${GLIBC_VER}.apk \
-  && curl -sL https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip -o awscliv2.zip \
-  && unzip awscliv2.zip \
-  && aws/install \
-  && rm -rf \
-  awscliv2.zip \
-  aws \
-  /usr/local/aws-cli/v2/*/dist/aws_completer \
-  /usr/local/aws-cli/v2/*/dist/awscli/data/ac.index \
-  /usr/local/aws-cli/v2/*/dist/awscli/examples \
-  && apk --no-cache del \
-  binutils \
-  && rm glibc-${GLIBC_VER}.apk \
-  && rm glibc-bin-${GLIBC_VER}.apk \
-  && rm -rf /var/cache/apk/*
-
-RUN apk add docker
-
-# buildx
-COPY --from=docker/buildx-bin /buildx /usr/libexec/docker/cli-plugins/docker-buildx
-
-VOLUME /root/.aws
-
-ENTRYPOINT ["aws"]
+# build the final image
+FROM alpine:${ALPINE_VERSION}
+COPY --from=builder /usr/local/lib/aws-cli/ /usr/local/lib/aws-cli/
+RUN ln -s /usr/local/lib/aws-cli/aws /usr/local/bin/aws
