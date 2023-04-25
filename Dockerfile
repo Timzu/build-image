@@ -24,6 +24,6 @@ FROM alpine:${ALPINE_VERSION}
 COPY --from=builder /usr/local/lib/aws-cli/ /usr/local/lib/aws-cli/
 RUN ln -s /usr/local/lib/aws-cli/aws /usr/local/bin/aws
 
-RUN aws --version
+VOLUME /root/.aws
 
 ENTRYPOINT ["aws"]
