@@ -66,12 +66,23 @@ _prepare() {
 
 ################################################################################
 
+_package() {
+    _check_version "helm"
+    _check_version "kubectl"
+
+    if [ -z "${CHANGED}" ]; then
+        _error "Not changed"
+    fi
+
+    # _check_version "awscli"
+}
+
 _check_version() {
     NAME=${1}
 
     NOW=$(cat ${SHELL_DIR}/README.md | grep "ENV ${NAME}" | awk '{print $3}' | xargs)
 
-    NEW=$(curl -sL timzu.github.io/${NAME}/LATEST | xargs)
+    NEW=$(curl -sL opspresso.github.io/${NAME}/LATEST | xargs)
 
     if [ -z "${NEW}" ]; then
         return
@@ -87,9 +98,14 @@ _check_version() {
         # replace
         _replace "s/ENV ${NAME} .*/ENV ${NAME} ${NEW}/g" ${SHELL_DIR}/README.md
         _replace "s/ENV ${NAME} .*/ENV ${NAME} ${NEW}/g" ${SHELL_DIR}/Dockerfile
+        _replace "s/ENV ${NAME} .*/ENV ${NAME} ${NEW}/g" ${SHELL_DIR}/VERSIONS
+        _replace "s/ENV ${NAME} .*/ENV ${NAME} ${NEW}/g" ${SHELL_DIR}/alpine/Dockerfile
+        _replace "s/ENV ${NAME} .*/ENV ${NAME} ${NEW}/g" ${SHELL_DIR}/kube/Dockerfile
     fi
 }
 
 ################################################################################
 
 _prepare
+
+_package
