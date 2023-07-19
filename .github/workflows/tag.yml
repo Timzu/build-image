@@ -19,7 +19,7 @@ jobs:
           fetch-depth: 1
 
       - name: Docker Push
-        uses: timzu/act-build@v0.3.24
+        uses: timzu/act-build@master
         with:
           args: --docker
         env:
