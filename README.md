@@ -1,5 +1,5 @@
-# Build-Image
+# Github Actions Build
 
 ```bash
-docker pull timzu/build-image
+docker pull timzu/github-actions-build
 ```
