@@ -1,4 +1,3 @@
-ARG ALPINE_VERSION=3.17
 FROM python:3.10-alpine${ALPINE_VERSION} as builder
 
 ARG AWS_CLI_VERSION=2.11.11
@@ -20,7 +19,7 @@ RUN find /usr/local/lib/aws-cli/awscli/botocore/data -name examples-1.json -dele
 RUN (cd /usr/local/lib/aws-cli; for a in *.so*; do test -f /lib/$a && rm $a; done)
 
 # build the final image
-FROM alpine:${ALPINE_VERSION}
+FROM alpine
 
 RUN apk --no-cache update && \
   apk add --no-cache bash curl python3 py3-pip jq git file tar docker
