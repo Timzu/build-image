@@ -1,6 +1,6 @@
 FROM python:3.10-alpine${ALPINE_VERSION} as builder
 
-ARG AWS_CLI_VERSION=2.11.11
+ARG AWS_CLI_VERSION=1.27.119
 RUN apk add --no-cache git unzip groff build-base libffi-dev cmake
 RUN git clone --single-branch --depth 1 -b ${AWS_CLI_VERSION} https://github.com/aws/aws-cli.git
 
@@ -31,12 +31,12 @@ RUN ln -s /usr/local/lib/aws-cli/aws /usr/local/bin/aws
 COPY --from=docker/buildx-bin /buildx /usr/libexec/docker/cli-plugins/docker-buildx
 
 # kubectl
-ENV kubectl v1.23.4
+ENV kubectl v1.27.0
 RUN curl -sLo /usr/local/bin/kubectl https://storage.googleapis.tcom/kubernetes-release/release/${kubectl}/bin/linux/amd64/kubectl && \
   chmod +x /usr/local/bin/kubectl
 
 # helm
-ENV helm v3.8.
+ENV helm v3.11.3
 RUN curl -sL https://get.helm.sh/helm-${helm}-linux-amd64.tar.gz | tar xz && \
   mv linux-amd64/helm /usr/local/bin/helm && \
   chmod +x /usr/local/bin/helm
