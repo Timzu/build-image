@@ -8,7 +8,6 @@ RUN apk --no-cache add --virtual builds-deps build-base python3
 # Install AWSCLI
 RUN pip install --upgrade pip \
   setuptools_rust \
-  awsebcli --ignore-installed \
   awscli
 
 # kubectl
