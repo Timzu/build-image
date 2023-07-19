@@ -1,3 +1,11 @@
+FROM alpine
+
+ENV GLIBC_VER=2.31-r0
+
+RUN apk --no-cache update && \
+  apk add --no-cache bash curl python3 py3-pip jq git file tar && \
+  apk add --no-cache -X http://dl-cdn.alpinelinux.org/alpine/edge/testing hub
+
 RUN apk --no-cache add \
   binutils \
   && curl -sL https://alpine-pkgs.sgerrand.com/sgerrand.rsa.pub -o /etc/apk/keys/sgerrand.rsa.pub \
@@ -27,12 +35,12 @@ RUN apk add docker
 COPY --from=docker/buildx-bin /buildx /usr/libexec/docker/cli-plugins/docker-buildx
 
 # kubectl
-ENV kubectl v1.27.0
+ENV kubectl v1.23.4
 RUN curl -sLo /usr/local/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/${kubectl}/bin/linux/amd64/kubectl && \
   chmod +x /usr/local/bin/kubectl
 
 # helm
-ENV helm v3.11.3
+ENV helm v3.8.1
 RUN curl -sL https://get.helm.sh/helm-${helm}-linux-amd64.tar.gz | tar xz && \
   mv linux-amd64/helm /usr/local/bin/helm && \
   chmod +x /usr/local/bin/helm
